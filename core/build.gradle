@@ -1,0 +1,14 @@
+plugins {
+  id "java"  // 保持原样
+}
+
+[compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+dependencies {
+  // 将 "api" 改为 "implementation"
+  implementation "com.badlogicgames.gdx:gdx:$gdxVersion"
+
+  if(enableGraalNative == 'true') {
+    implementation "io.github.berstanio:gdx-svmhelper-annotations:$graalHelperVersion"
+  }
+}

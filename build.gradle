@@ -1,0 +1,78 @@
+buildscript {
+  repositories {
+    mavenCentral()
+    gradlePluginPortal()
+    mavenLocal()
+    google()
+    maven { url = 'https://central.sonatype.com/repository/maven-snapshots/' }
+  }
+  // 如果不需要构建脚本的自定义依赖，这里可以省略 dependencies 块
+}
+
+plugins {
+  id 'java'
+  id 'application'
+  id 'org.openjfx.javafxplugin' version '0.1.0'
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  implementation 'org.json:json:20250107'
+}
+
+javafx {
+  version = "21"
+  modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
+application {
+  mainClass = 'EasyGui.MainGui'
+}
+
+// 可选：生成 assets.txt 的任务（如果你有 assets 文件夹）
+tasks.register('generateAssetList') {
+  doLast {
+    def assetsFolder = file("${projectDir}/assets")
+    def assetsFile = file("${assetsFolder}/assets.txt")
+    if (assetsFolder.exists()) {
+      assetsFile.delete()
+      fileTree(assetsFolder).collect { assetsFolder.relativePath(it) }.sort().each {
+        assetsFile.append(it + "\n")
+      }
+    }
+  }
+}
+processResources.dependsOn 'generateAssetList'
+
+// IDEA / Eclipse 插件配置（可选）
+apply plugin: 'idea'
+apply plugin: 'eclipse'
+
+idea {
+  module {
+    outputDir = file('build/classes/java/main')
+    testOutputDir = file('build/classes/java/test')
+  }
+}
+subprojects {
+  apply plugin: 'java'
+  apply plugin: 'application'
+  // 可选：应用 javafx 插件
+  apply plugin: 'org.openjfx.javafxplugin'
+
+  repositories {
+    mavenCentral()
+  }
+
+  javafx {
+    version = "21"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+  }
+
+  dependencies {
+    implementation 'org.json:json:20250107'
+  }
+}

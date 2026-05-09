@@ -382,6 +382,23 @@ public class MainGui extends Application {
             if (saveSuccess) {
                 System.out.println("[MainGui]:Save file created successfully");
                 CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Save creation completed successfully");
+                
+                // 等待文件系统刷新（处理文件创建延迟）
+                String expectedFileName = simulationName + ".json";
+                FindSaves.waitForFileCreation(expectedFileName, 2000);
+                
+                // 刷新存档列表
+                boolean refreshSuccess = FindSaves.refreshSaveList();
+                if (refreshSuccess) {
+                    System.out.println("[MainGui]:Save list refreshed successfully");
+                    CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Save list refreshed successfully");
+                } else {
+                    System.err.println("[MainGui]:Failed to refresh save list");
+                    CreateLogFile.getInstance().log(CreateLogFile.LogLevel.WARN, "[MainGui]:Failed to refresh save list");
+                }
+                
+                // 更新菜单栏按钮状态
+                NewSimulationClicked = false;
             } else {
                 System.err.println("[MainGui]:Failed to create save file");
                 CreateLogFile.getInstance().log(CreateLogFile.LogLevel.ERROR, "[MainGui]:Save creation failed");
