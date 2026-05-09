@@ -1,0 +1,59 @@
+{
+  "MapRelatedData": {
+    "BasicMapInformation":{
+      "MapName":"AutoSaves-Ex",
+      "MapCreateDate": "",
+      "MapCreator": "",
+      "CurrentMapSeason": "",
+      "MapRegion": ""
+    },
+    "TerrainData": {
+      "CurrentMapContourLineData": "",
+      "CurrentRiverBankData": "",
+      "CurrentVegetationData": "",
+      "CurrentWindDirectionData": "",
+      "CurrentTemperatureData": ""
+    },
+    "HydrologyData": {
+      "CurrentRiverFlowingSpeed": "",
+      "CurrentRiverPollution": "",
+      "CurrentRiverTemperature": "",
+      "OceanCurrentData": "",
+      "CurrentOceanTemperatureData": ""
+    }
+  },
+  "CreatureData": {
+    "CitizenData": {
+      "CitizenBasicData": {
+        "CitizenID": "",
+        "CitizenName": "",
+        "CitizenSex": "",
+        "CurrentCitizenAges": "",
+        "CurrentCitizenPersonality": "",
+        "CurrentCitizenHeight": "",
+        "CurrentCitizenWeight": ""
+      },
+      "CitizenSocietyData": {
+        "CurrentCitizenEmployment": "",
+        "CurrentCitizenEducationalBackground": "",
+        "CurrentCitizenFamily": "",
+        "CurrentCitizenDisease": ""
+      },
+      "EntityData": {
+        "CurrentNaturalCreature": "",
+        "CurrentVegetationGrow": ""
+      }
+    }
+  },
+  "ObjectData": {
+    "RoadRelatedData": {
+      "CurrentRoadLine": "",
+      "CurrentRodeNode": "",
+      "CurrentRoadType": "",
+      "CurrentRoadAllowVehicleType": ""
+    },
+    "BuildingRelatedData": {
+
+    }
+  }
+}

@@ -1,0 +1,55 @@
+{
+    "MapRelatedData": {
+        "TerrainData": {
+            "CurrentTemperatureData": "",
+            "CurrentMapContourLineData": "",
+            "CurrentRiverBankData": "",
+            "CurrentWindDirectionData": "",
+            "CurrentVegetationData": ""
+        },
+        "HydrologyData": {
+            "CurrentRiverPollution": "",
+            "CurrentOceanTemperatureData": "",
+            "OceanCurrentData": "",
+            "CurrentRiverFlowingSpeed": "",
+            "CurrentRiverTemperature": ""
+        },
+        "BasicMapInformation": {
+            "MapName": "01",
+            "CurrentMapSeason": "",
+            "MapCreateDate": "2026-05-02 16:25:07",
+            "MapRegion": "Asia - South",
+            "MapCreator": "Player"
+        }
+    },
+    "ObjectData": {
+        "RoadRelatedData": {
+            "CurrentRoadLine": "",
+            "CurrentRoadAllowVehicleType": "",
+            "CurrentRodeNode": "",
+            "CurrentRoadType": ""
+        },
+        "BuildingRelatedData": {}
+    },
+    "CreatureData": {"CitizenData": {
+        "CitizenSocietyData": {
+            "CurrentCitizenEmployment": "",
+            "CurrentCitizenEducationalBackground": "",
+            "CurrentCitizenFamily": "",
+            "CurrentCitizenDisease": ""
+        },
+        "EntityData": {
+            "CurrentNaturalCreature": "",
+            "CurrentVegetationGrow": ""
+        },
+        "CitizenBasicData": {
+            "CitizenID": "",
+            "CurrentCitizenHeight": "",
+            "CitizenSex": "",
+            "CurrentCitizenPersonality": "",
+            "CurrentCitizenAges": "",
+            "CitizenName": "",
+            "CurrentCitizenWeight": ""
+        }
+    }}
+}
