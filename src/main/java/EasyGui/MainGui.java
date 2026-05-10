@@ -13,9 +13,11 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import  javafx.collections.*;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import org.json.JSONObject;
 
 
 import java.util.ArrayList;
@@ -81,10 +83,10 @@ public class MainGui extends Application {
         Scene scene = new Scene(root ,800,600);
 
         //定义窗口名
-        primaryStage.setTitle("FunTamyCity-InternalVer.");
+        primaryStage.setTitle("EndlessCity-InternalVer.");
         primaryStage.setScene(scene);
         primaryStage.show();
-        CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO,"[MainGui]:Create window 'FunTamyCity-InternalVer.' Successfully");
+        CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO,"[MainGui]:Create window 'EndlessCity-InternalVer.' Successfully");
 
     }
     public void SavesChoosingWindow() {
@@ -139,7 +141,8 @@ public class MainGui extends Application {
                if (selectedSave != null) {
                    System.out.println("[MainGui]:Save detail:" + selectedSave);
                    CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Save detail:" + selectedSave);
-                   //后续添加打开存档详情的窗口
+                   DetailInspectWindow(selectedSave);
+
                }
             });
             //添加ListView存档列表的选择事件
@@ -166,28 +169,28 @@ public class MainGui extends Application {
 
     public void NewSimulationSettingWindow() {
         //用于创建一个窗口，调整新模拟的基本信息
-        
+
         //创建模拟选项窗口的布局
         BorderPane simulationOptionsBorderPane = new BorderPane();
-        
+
         //顶部标题
         Label titleLabel = new Label("Simulation options");
         titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
         BorderPane.setAlignment(titleLabel, Pos.CENTER);
         BorderPane.setMargin(titleLabel, new Insets(10));
         simulationOptionsBorderPane.setTop(titleLabel);
-        
+
         //中心区域 - 模拟参数设置
         VBox centerPanel = new VBox(15);
         centerPanel.setPadding(new Insets(20));
-        
+
         //模拟名称设置
         HBox nameSetting = new HBox(10);
         Label nameLabel = new Label("Simulation Name:");
         TextField nameField = new TextField();
         nameField.setPromptText("Enter simulation name");
         nameSetting.getChildren().addAll(nameLabel, nameField);
-        
+
         //星球选择设置
         HBox planetSetting = new HBox(10);
         Label planetLabel = new Label("Planet:");
@@ -196,14 +199,14 @@ public class MainGui extends Application {
         planetComboBox.setValue("Earth");
         planetLabel.setPrefWidth(120);
         planetSetting.getChildren().addAll(planetLabel, planetComboBox);
-        
+
         //区域选择设置
         HBox regionSetting = new HBox(10);
         Label regionLabel = new Label("Region:");
         ComboBox<String> regionComboBox = new ComboBox<>();
         regionLabel.setPrefWidth(120);
         regionSetting.getChildren().addAll(regionLabel, regionComboBox);
-        
+
         //区域数据定义 - 每个星球对应不同区域和经纬度
         //地球区域
         ObservableList<String> earthRegions = FXCollections.observableArrayList(
@@ -213,33 +216,33 @@ public class MainGui extends Application {
             "Africa - North", "Africa - Central", "Africa - South", "Oceania - Australia",
             "Oceania - New Zealand", "Middle East - West", "Middle East - East"
         );
-        
+
         //火星区域
         ObservableList<String> marsRegions = FXCollections.observableArrayList(
             "Valles Marineris North", "Valles Marineris South", "Olympus Mons Foothills",
             "Hellas Planitia", "Arabia Terra", "Noctis Labyrinthus", "Acidalia Planitia",
             "Utopia Planitia", "Hellas Basin Rim", "Syrtis Major"
         );
-        
+
         //月球区域
         ObservableList<String> moonRegions = FXCollections.observableArrayList(
             "Mare Imbrium", "Mare Serenitatis", "Mare Tranquillitatis", "Mare Crisium",
             "Mare Nubium", "Mare Fecunditatis", "Oceanus Procellarum", "Lacus Somniorum",
             "Sinus Iridum", "Tycho Crater Region"
         );
-        
+
         //土卫六区域
         ObservableList<String> titanRegions = FXCollections.observableArrayList(
             "Shangri-La Dune Sea", "Kraken Mare Coast", "Ligeia Mare Shore",
             "Ontario Lacus Region", "Polonia Dune Field", "Sentinels Range"
         );
-        
+
         //木卫二区域
         ObservableList<String> europaRegions = FXCollections.observableArrayList(
             "Conamara Chaos", "Thera Regio", "Minos Linea", "Powys Regio",
             "Annwn Regio", "Atlantis Linea", "Murray Linea"
         );
-        
+
         //经纬度显示
         HBox coordinatesSetting = new HBox(10);
         Label coordinatesLabel = new Label("Coordinates:");
@@ -247,15 +250,15 @@ public class MainGui extends Application {
         Label longitudeValueLabel = new Label("N/A");
         coordinatesLabel.setPrefWidth(120);
         coordinatesSetting.getChildren().addAll(coordinatesLabel, latitudeValueLabel, longitudeValueLabel);
-        
+
         //用于存储当前选中的经纬度坐标，供后续气候计算模块使用
         double[] coords = {0, 0};
-        
+
         //根据星球选择更新区域列表
         planetComboBox.setOnAction(e -> {
             String selectedPlanet = planetComboBox.getValue();
             regionComboBox.getItems().clear();
-            
+
             switch (selectedPlanet) {
                 case "Earth":
                     regionComboBox.getItems().addAll(earthRegions);
@@ -273,22 +276,22 @@ public class MainGui extends Application {
                     regionComboBox.getItems().addAll(europaRegions);
                     break;
             }
-            
+
             if (!regionComboBox.getItems().isEmpty()) {
                 regionComboBox.setValue(regionComboBox.getItems().get(0));
             }
-            
+
             latitudeValueLabel.setText("N/A");
             longitudeValueLabel.setText("N/A");
             coords[0] = 0;
             coords[1] = 0;
         });
-        
+
         //根据区域选择更新经纬度
         regionComboBox.setOnAction(e -> {
             String selectedRegion = regionComboBox.getValue();
             String selectedPlanet = planetComboBox.getValue();
-            
+
             if (selectedRegion != null && selectedPlanet != null) {
                 double[] calculatedCoords = calculateCoordinates(selectedPlanet, selectedRegion);
                 coords[0] = calculatedCoords[0];
@@ -297,7 +300,7 @@ public class MainGui extends Application {
                 longitudeValueLabel.setText(String.format("%.0f°", coords[1]));
             }
         });
-        
+
         //地图大小设置
         HBox mapSizeSetting = new HBox(10);
         Label sizeLabel = new Label("Map Size:");
@@ -306,7 +309,7 @@ public class MainGui extends Application {
         sizeComboBox.setValue("Medium (512x512)");
         sizeLabel.setPrefWidth(120);
         mapSizeSetting.getChildren().addAll(sizeLabel, sizeComboBox);
-        
+
         //地形类型设置
         HBox terrainSetting = new HBox(10);
         Label terrainLabel = new Label("Terrain Type:");
@@ -315,7 +318,7 @@ public class MainGui extends Application {
         terrainComboBox.setValue("Mixed");
         terrainLabel.setPrefWidth(120);
         terrainSetting.getChildren().addAll(terrainLabel, terrainComboBox);
-        
+
         //难度设置
         HBox difficultySetting = new HBox(10);
         Label difficultyLabel = new Label("Difficulty:");
@@ -329,27 +332,27 @@ public class MainGui extends Application {
         normalButton.setSelected(true);
         difficultyLabel.setPrefWidth(120);
         difficultySetting.getChildren().addAll(difficultyLabel, easyButton, normalButton, hardButton);
-        
+
         //将所有设置添加到中心面板
-        centerPanel.getChildren().addAll(nameSetting, planetSetting, regionSetting, 
+        centerPanel.getChildren().addAll(nameSetting, planetSetting, regionSetting,
             coordinatesSetting, mapSizeSetting, terrainSetting, difficultySetting);
         simulationOptionsBorderPane.setCenter(centerPanel);
-        
+
         //底部按钮区域
         HBox buttonBar = new HBox(15);
         buttonBar.setAlignment(Pos.CENTER);
         buttonBar.setPadding(new Insets(10));
-        
+
         Button confirmButton = new Button("Confirm");
         Button cancelButton = new Button("Cancel");
-        
+
         //确认按钮事件
         confirmButton.setOnAction(e -> {
             String simulationName = nameField.getText().trim();
             if (simulationName.isEmpty()) {
                 simulationName = "New Simulation";
             }
-            
+
             String planet = planetComboBox.getValue();
             String region = regionComboBox.getValue();
             double latitude = coords[0];
@@ -359,7 +362,7 @@ public class MainGui extends Application {
             String difficulty = "Normal";
             if (easyButton.isSelected()) difficulty = "Easy";
             if (hardButton.isSelected()) difficulty = "Hard";
-            
+
             System.out.println("[MainGui]:Creating new simulation with settings:");
             System.out.println("[MainGui]:Name: " + simulationName);
             System.out.println("[MainGui]:Planet: " + planet);
@@ -368,25 +371,25 @@ public class MainGui extends Application {
             System.out.println("[MainGui]:Map Size: " + mapSize);
             System.out.println("[MainGui]:Terrain: " + terrain);
             System.out.println("[MainGui]:Difficulty: " + difficulty);
-            
-            CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Creating new simulation - Name: " + simulationName + 
-                ", Planet: " + planet + ", Region: " + region + ", Coords: " + String.format("%.0f", latitude) + "°/" + String.format("%.0f", longitude) + "°" + 
+
+            CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Creating new simulation - Name: " + simulationName +
+                ", Planet: " + planet + ", Region: " + region + ", Coords: " + String.format("%.0f", latitude) + "°/" + String.format("%.0f", longitude) + "°" +
                 ", Map Size: " + mapSize + ", Terrain: " + terrain + ", Difficulty: " + difficulty);
-            
+
             // 调用存档创建功能
             CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Starting save creation for simulation: " + simulationName);
             Simulation.SimulationSaver saver = new Simulation.SimulationSaver();
             saver.setBasicMapInfo(simulationName, "Player", region);
             boolean saveSuccess = saver.saveToFile(simulationName);
-            
+
             if (saveSuccess) {
                 System.out.println("[MainGui]:Save file created successfully");
                 CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Save creation completed successfully");
-                
+
                 // 等待文件系统刷新（处理文件创建延迟）
                 String expectedFileName = simulationName + ".json";
                 FindSaves.waitForFileCreation(expectedFileName, 2000);
-                
+
                 // 刷新存档列表
                 boolean refreshSuccess = FindSaves.refreshSaveList();
                 if (refreshSuccess) {
@@ -396,43 +399,43 @@ public class MainGui extends Application {
                     System.err.println("[MainGui]:Failed to refresh save list");
                     CreateLogFile.getInstance().log(CreateLogFile.LogLevel.WARN, "[MainGui]:Failed to refresh save list");
                 }
-                
+
                 // 更新菜单栏按钮状态
                 NewSimulationClicked = false;
             } else {
                 System.err.println("[MainGui]:Failed to create save file");
                 CreateLogFile.getInstance().log(CreateLogFile.LogLevel.ERROR, "[MainGui]:Save creation failed");
             }
-            
+
             //关闭窗口
             Stage currentStage = (Stage) confirmButton.getScene().getWindow();
             currentStage.close();
-            
+
             //后续添加实际的新模拟创建逻辑
         });
-        
+
         //取消按钮事件
         cancelButton.setOnAction(e -> {
             System.out.println("[MainGui]:Simulation options cancelled");
             CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Simulation options cancelled");
-            
+
             //关闭窗口
             Stage currentStage = (Stage) cancelButton.getScene().getWindow();
             currentStage.close();
         });
-        
+
         buttonBar.getChildren().addAll(confirmButton, cancelButton);
         simulationOptionsBorderPane.setBottom(buttonBar);
-        
+
         //创建舞台并显示
         Stage simulationOptionsStage = new Stage();
         simulationOptionsStage.setTitle("Simulation options");
         simulationOptionsStage.setScene(new Scene(simulationOptionsBorderPane, 600, 500));
         simulationOptionsStage.show();
-        
+
         //初始化默认星球的区域列表
         planetComboBox.fireEvent(new javafx.event.ActionEvent());
-        
+
         //初始化默认区域的经纬度显示
         if (regionComboBox.getValue() != null && planetComboBox.getValue() != null) {
             double[] initialCoords = calculateCoordinates(planetComboBox.getValue(), regionComboBox.getValue());
@@ -441,14 +444,14 @@ public class MainGui extends Application {
             latitudeValueLabel.setText(String.format("%.0f°", coords[0]));
             longitudeValueLabel.setText(String.format("%.0f°", coords[1]));
         }
-        
+
         CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Create window 'Simulation options' successfully");
     }
-    
+
     private double[] calculateCoordinates(String planet, String region) {
         //根据星球和区域返回对应的经纬度坐标（仅精确到度）
         double[] coords = {0, 0};
-        
+
         switch (planet) {
             case "Earth":
                 switch (region) {
@@ -523,8 +526,316 @@ public class MainGui extends Application {
                 }
                 break;
         }
-        
+
         return coords;
+    }
+
+    // Detail按钮打开的窗口
+    // EXTENSION_INTERFACE: 添加新信息项时，请在对应的Category下添加新的infoItems.add()调用
+    public static void DetailInspectWindow(String saveFileName) {
+        if (saveFileName == null || saveFileName.trim().isEmpty()) {
+            System.err.println("[MainGui]:DetailInspectWindow: Invalid save file name");
+            CreateLogFile.getInstance().log(CreateLogFile.LogLevel.ERROR, "[MainGui]:DetailInspectWindow: Invalid save file name");
+            return;
+        }
+
+        String savesFolder = "src/main/resources/Saves";
+        String jsonFileName = saveFileName;
+        if (!jsonFileName.endsWith(".json")) {
+            jsonFileName = jsonFileName + ".json";
+        }
+        String fullPath = savesFolder + "/" + jsonFileName;
+
+        org.json.JSONObject saveData = loadSaveFile(fullPath);
+        if (saveData == null) {
+            showErrorDialog("Failed to load save file: " + saveFileName);
+            return;
+        }
+
+        TabPane tabPane = new TabPane();
+        tabPane.setTabClosingPolicy(TabPane.TabClosingPolicy.UNAVAILABLE);
+
+        Tab basicInfoTab = new Tab("Basic Info");
+        basicInfoTab.setContent(createBasicInfoContent(saveData, saveFileName));
+        tabPane.getTabs().add(basicInfoTab);
+
+        Tab mapTab = new Tab("Map Data");
+        mapTab.setContent(createMapDataContent(saveData));
+        tabPane.getTabs().add(mapTab);
+
+        Tab citizenTab = new Tab("Citizen Data");
+        citizenTab.setContent(createCitizenDataContent(saveData));
+        tabPane.getTabs().add(citizenTab);
+
+        Tab objectTab = new Tab("Object Data");
+        objectTab.setContent(createObjectDataContent(saveData));
+        tabPane.getTabs().add(objectTab);
+
+        // EXTENSION_POINT: 在此处添加新的选项卡
+        // 示例: Tab customTab = new Tab("Custom"); customTab.setContent(createCustomContent(saveData)); tabPane.getTabs().add(customTab);
+
+        BorderPane rootPane = new BorderPane();
+        rootPane.setTop(new Label("Save Details: " + saveFileName));
+        rootPane.setCenter(tabPane);
+
+        Button closeButton = new Button("Close");
+        closeButton.setOnAction(e -> {
+            Stage stage = (Stage) closeButton.getScene().getWindow();
+            stage.close();
+        });
+
+        HBox bottomBar = new HBox(closeButton);
+        bottomBar.setAlignment(Pos.CENTER_RIGHT);
+        bottomBar.setPadding(new Insets(10));
+        rootPane.setBottom(bottomBar);
+
+        BorderPane.setMargin(tabPane, new Insets(10));
+        BorderPane.setAlignment(rootPane.getTop(), Pos.CENTER);
+
+        Stage detailStage = new Stage();
+        detailStage.setTitle("Save Details");
+        detailStage.setScene(new Scene(rootPane, 600, 500));
+        detailStage.show();
+
+        CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:DetailInspectWindow opened for: " + saveFileName);
+    }
+
+    private static JSONObject loadSaveFile(String filePath) {
+        try {
+            java.io.File file = new java.io.File(filePath);
+            if (!file.exists()) {
+                System.err.println("[MainGui]:Save file not found: " + filePath);
+                return null;
+            }
+            String content = new String(java.nio.file.Files.readAllBytes(file.toPath()));
+            return new org.json.JSONObject(content);
+        } catch (Exception e) {
+            System.err.println("[MainGui]:Failed to load save file: " + e.getMessage());
+            CreateLogFile.getInstance().log(CreateLogFile.LogLevel.ERROR, "[MainGui]:Failed to load save file: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private static VBox createBasicInfoContent(JSONObject saveData, String fileName) {
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(15));
+
+        Label titleLabel = new Label("Basic Map Information");
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(15);
+        grid.setVgap(8);
+
+        int row = 0;
+        grid.add(new Label("File Name:"), 0, row);
+        grid.add(new Label(fileName), 1, row++);
+
+        try {
+            JSONObject basicInfo = saveData.getJSONObject("MapRelatedData").getJSONObject("BasicMapInformation");
+            addInfoRow(grid, "Map Name:", getJsonString(basicInfo, "MapName"), row++);
+            addInfoRow(grid, "Creator:", getJsonString(basicInfo, "MapCreator"), row++);
+            addInfoRow(grid, "Region:", getJsonString(basicInfo, "MapRegion"), row++);
+            addInfoRow(grid, "Create Date:", getJsonString(basicInfo, "MapCreateDate"), row++);
+            addInfoRow(grid, "Season:", getJsonString(basicInfo, "CurrentMapSeason"), row++);
+        } catch (Exception e) {
+            grid.add(new Label("Error loading basic info"), 1, row);
+        }
+
+        content.getChildren().addAll(titleLabel, grid);
+        return content;
+    }
+
+    private static VBox createMapDataContent(JSONObject saveData) {
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(15));
+
+        Label titleLabel = new Label("Map Related Data");
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        TitledPane terrainPane = new TitledPane("Terrain Data", createTerrainContent(saveData));
+        TitledPane hydrologyPane = new TitledPane("Hydrology Data", createHydrologyContent(saveData));
+
+        terrainPane.setExpanded(true);
+        hydrologyPane.setExpanded(true);
+
+        content.getChildren().addAll(titleLabel, terrainPane, hydrologyPane);
+        return content;
+    }
+
+    private static VBox createTerrainContent(JSONObject saveData) {
+        VBox content = new VBox(5);
+        content.setPadding(new Insets(10));
+        try {
+            JSONObject terrain = saveData.getJSONObject("MapRelatedData").getJSONObject("TerrainData");
+            addInfoRow(content, "Contour Line:", getJsonString(terrain, "CurrentMapContourLineData"));
+            addInfoRow(content, "River Bank:", getJsonString(terrain, "CurrentRiverBankData"));
+            addInfoRow(content, "Vegetation:", getJsonString(terrain, "CurrentVegetationData"));
+            addInfoRow(content, "Wind Direction:", getJsonString(terrain, "CurrentWindDirectionData"));
+            addInfoRow(content, "Temperature:", getJsonString(terrain, "CurrentTemperatureData"));
+        } catch (Exception e) {
+            content.getChildren().add(new Label("No terrain data available"));
+        }
+        return content;
+    }
+
+    private static VBox createHydrologyContent(JSONObject saveData) {
+        VBox content = new VBox(5);
+        content.setPadding(new Insets(10));
+        try {
+            JSONObject hydrology = saveData.getJSONObject("MapRelatedData").getJSONObject("HydrologyData");
+            addInfoRow(content, "River Speed:", getJsonString(hydrology, "CurrentRiverFlowingSpeed"));
+            addInfoRow(content, "River Pollution:", getJsonString(hydrology, "CurrentRiverPollution"));
+            addInfoRow(content, "River Temperature:", getJsonString(hydrology, "CurrentRiverTemperature"));
+            addInfoRow(content, "Ocean Current:", getJsonString(hydrology, "OceanCurrentData"));
+            addInfoRow(content, "Ocean Temperature:", getJsonString(hydrology, "CurrentOceanTemperatureData"));
+        } catch (Exception e) {
+            content.getChildren().add(new Label("No hydrology data available"));
+        }
+        return content;
+    }
+
+    private static VBox createCitizenDataContent(JSONObject saveData) {
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(15));
+
+        Label titleLabel = new Label("Citizen Information");
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        TitledPane basicPane = new TitledPane("Basic Data", createCitizenBasicContent(saveData));
+        TitledPane societyPane = new TitledPane("Society Data", createCitizenSocietyContent(saveData));
+
+        basicPane.setExpanded(true);
+
+        content.getChildren().addAll(titleLabel, basicPane, societyPane);
+        return content;
+    }
+
+    private static VBox createCitizenBasicContent(JSONObject saveData) {
+        VBox content = new VBox(5);
+        content.setPadding(new Insets(10));
+        try {
+            JSONObject citizen = saveData.getJSONObject("CreatureData").getJSONObject("CitizenData");
+            JSONObject basic = citizen.getJSONObject("CitizenBasicData");
+            addInfoRow(content, "Citizen ID:", getJsonString(basic, "CitizenID"));
+            addInfoRow(content, "Name:", getJsonString(basic, "CitizenName"));
+            addInfoRow(content, "Sex:", getJsonString(basic, "CitizenSex"));
+            addInfoRow(content, "Age:", getJsonString(basic, "CurrentCitizenAges"));
+            addInfoRow(content, "Personality:", getJsonString(basic, "CurrentCitizenPersonality"));
+            addInfoRow(content, "Height:", getJsonString(basic, "CurrentCitizenHeight"));
+            addInfoRow(content, "Weight:", getJsonString(basic, "CurrentCitizenWeight"));
+        } catch (Exception e) {
+            content.getChildren().add(new Label("No citizen basic data available"));
+        }
+        return content;
+    }
+
+    private static VBox createCitizenSocietyContent(JSONObject saveData) {
+        VBox content = new VBox(5);
+        content.setPadding(new Insets(10));
+        try {
+            JSONObject citizen = saveData.getJSONObject("CreatureData").getJSONObject("CitizenData");
+            JSONObject society = citizen.getJSONObject("CitizenSocietyData");
+            addInfoRow(content, "Employment:", getJsonString(society, "CurrentCitizenEmployment"));
+            addInfoRow(content, "Education:", getJsonString(society, "CurrentCitizenEducationalBackground"));
+            addInfoRow(content, "Family:", getJsonString(society, "CurrentCitizenFamily"));
+            addInfoRow(content, "Disease:", getJsonString(society, "CurrentCitizenDisease"));
+        } catch (Exception e) {
+            content.getChildren().add(new Label("No citizen society data available"));
+        }
+        return content;
+    }
+
+    private static VBox createObjectDataContent(JSONObject saveData) {
+        VBox content = new VBox(10);
+        content.setPadding(new Insets(15));
+
+        Label titleLabel = new Label("Object Information");
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+
+        TitledPane roadPane = new TitledPane("Road Data", createRoadContent(saveData));
+        TitledPane buildingPane = new TitledPane("Building Data", createBuildingContent(saveData));
+
+        roadPane.setExpanded(true);
+        buildingPane.setExpanded(true);
+
+        content.getChildren().addAll(titleLabel, roadPane, buildingPane);
+        return content;
+    }
+
+    private static VBox createRoadContent(JSONObject saveData) {
+        VBox content = new VBox(5);
+        content.setPadding(new Insets(10));
+        try {
+            JSONObject object = saveData.getJSONObject("ObjectData");
+            JSONObject road = object.getJSONObject("RoadRelatedData");
+            addInfoRow(content, "Road Line:", getJsonString(road, "CurrentRoadLine"));
+            addInfoRow(content, "Road Node:", getJsonString(road, "CurrentRodeNode"));
+            addInfoRow(content, "Road Type:", getJsonString(road, "CurrentRoadType"));
+            addInfoRow(content, "Allow Vehicle:", getJsonString(road, "CurrentRoadAllowVehicleType"));
+        } catch (Exception e) {
+            content.getChildren().add(new Label("No road data available"));
+        }
+        return content;
+    }
+
+    private static VBox createBuildingContent(JSONObject saveData) {
+        VBox content = new VBox(5);
+        content.setPadding(new Insets(10));
+        try {
+            JSONObject object = saveData.getJSONObject("ObjectData");
+            JSONObject building = object.getJSONObject("BuildingRelatedData");
+            if (building.length() == 0) {
+                content.getChildren().add(new Label("No building data available"));
+            } else {
+                building.keys().forEachRemaining(key ->
+                    addInfoRow(content, key + ":", getJsonString(building, key))
+                );
+            }
+        } catch (Exception e) {
+            content.getChildren().add(new Label("No building data available"));
+        }
+        return content;
+    }
+
+    private static void addInfoRow(VBox parent, String label, String value) {
+        HBox row = new HBox(10);
+        Label lbl = new Label(label);
+        lbl.setPrefWidth(140);
+        lbl.setStyle("-fx-font-weight: bold;");
+        Label val = new Label(value != null && !value.isEmpty() ? value : "N/A");
+        val.setStyle("-fx-text-fill: #666666;");
+        row.getChildren().addAll(lbl, val);
+        parent.getChildren().add(row);
+    }
+
+    private static void addInfoRow(GridPane grid, String label, String value, int row) {
+        Label lbl = new Label(label);
+        lbl.setStyle("-fx-font-weight: bold;");
+        Label val = new Label(value != null && !value.isEmpty() ? value : "N/A");
+        val.setStyle("-fx-text-fill: #666666;");
+        grid.add(lbl, 0, row);
+        grid.add(val, 1, row);
+    }
+
+    private static String getJsonString(JSONObject obj, String key) {
+        try {
+            if (obj.has(key) && !obj.isNull(key)) {
+                String val = obj.get(key).toString();
+                return val.isEmpty() ? "N/A" : val;
+            }
+        } catch (Exception e) {
+            // ignore
+        }
+        return "N/A";
+    }
+
+    private static void showErrorDialog(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
     public static void main(String[] args) {
         Simulation.FindSaves.main(null);
