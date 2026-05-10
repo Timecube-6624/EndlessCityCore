@@ -836,9 +836,11 @@ public class MainGui extends Application {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+
     }
     public static void main(String[] args) {
         Simulation.FindSaves.main(null);
         launch(args);
+
     }
 }
