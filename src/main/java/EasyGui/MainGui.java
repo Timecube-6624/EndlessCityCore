@@ -30,11 +30,13 @@ import static Simulation.CitizenGenerator.SetRegion;
 
 public class MainGui extends Application {
     public static boolean NewSimulationClicked;
+    private static boolean SimulationViewOpen = false;//跟踪主模拟窗口是否已经打开
     public void start(Stage primaryStage) {
         //创建菜单栏
         BorderPane borderPane = new BorderPane();
         MenuBar menuBar = new MenuBar();
         Menu fileMenu = new Menu("File");//定义选项卡名称
+        Menu AboutMenu = new Menu("About");
         //选项卡菜单名称
         MenuItem ContinueSimulation = new MenuItem("Continue Simulation");
         MenuItem NewSimulation = new MenuItem("New Simulation");
@@ -48,10 +50,23 @@ public class MainGui extends Application {
         NewSimulation.setOnAction(e -> {
             System.out.println("New Simulation");
             CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:New Simulation clicked");
-            NewSimulationClicked = true;
-            //创建一个窗口，设定新模拟的基本信息
-            NewSimulationSettingWindow();
 
+            if (SimulationViewOpen) {
+                Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+                confirmAlert.setTitle("Confirm New Simulation");
+                confirmAlert.setHeaderText(null);
+                confirmAlert.setContentText("A simulation is already running. Are you sure you want to create a new one?");
+                confirmAlert.showAndWait().ifPresent(response -> {
+                    if (response == ButtonType.OK) {
+                        SimulationViewOpen = false;
+                        NewSimulationClicked = true;
+                        NewSimulationSettingWindow();
+                    }
+                });
+            } else {
+                NewSimulationClicked = true;
+                NewSimulationSettingWindow();
+            }
         });
         LoadSimulation.setOnAction(e -> {
             System.out.println("Load Simulation");
@@ -78,6 +93,7 @@ public class MainGui extends Application {
         );
         //定义窗口基本信息
         menuBar.getMenus().add(fileMenu);
+        menuBar.getMenus().add(AboutMenu);
         BorderPane root = new BorderPane();
         root.setTop(menuBar);
         Scene scene = new Scene(root ,800,600);
@@ -132,7 +148,11 @@ public class MainGui extends Application {
                if (selectedSave != null) {
                    System.out.println("[MainGui]:Loading Save:" + selectedSave);
                    CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Loading Save:" + selectedSave);
-                   //后续添加实际的存档加载逻辑代码，并关闭这个窗口
+                //创建新窗口并且关闭存档加载窗口
+                   Stage saveListStage = (Stage) confirmButton.getScene().getWindow();
+                   saveListStage.close();
+
+                   Platform.runLater(() -> openSimulationMainView());
                }
             });
             //处理detailButton的按钮事件
@@ -411,7 +431,11 @@ public class MainGui extends Application {
             Stage currentStage = (Stage) confirmButton.getScene().getWindow();
             currentStage.close();
 
-            //后续添加实际的新模拟创建逻辑
+            //打开模拟主界面
+            if (saveSuccess) {
+                Platform.runLater(() -> openSimulationMainView());
+            }
+
         });
 
         //取消按钮事件
@@ -838,6 +862,19 @@ public class MainGui extends Application {
         alert.showAndWait();
 
     }
+
+    private static void openSimulationMainView() {
+        if (SimulationViewOpen) return;
+
+        SimulationMainView mainView = new SimulationMainView();
+        Stage mainViewStage = new Stage();
+        mainViewStage.setOnCloseRequest(e -> SimulationViewOpen = false);
+        mainView.start(mainViewStage);
+        SimulationViewOpen = true;
+
+        CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:SimulationMainView opened");
+    }
+
     public static void main(String[] args) {
         Simulation.FindSaves.main(null);
         launch(args);
