@@ -114,6 +114,11 @@ public class SimulationSaver {
             .put("CurrentMapSeason", season);
     }
     
+    public void setTerrainType(String terrainType) {
+        saveData.getJSONObject("MapRelatedData").getJSONObject("TerrainData")
+            .put("TerrainType", terrainType);
+    }
+    
     public void setTerrainData(String contourLine, String riverBank, String vegetation,
                                String windDirection, String temperature) {
         JSONObject terrain = saveData.getJSONObject("MapRelatedData").getJSONObject("TerrainData");

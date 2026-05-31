@@ -19,6 +19,9 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.json.JSONObject;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -334,8 +337,43 @@ public class MainGui extends Application {
         HBox terrainSetting = new HBox(10);
         Label terrainLabel = new Label("Terrain Type:");
         ComboBox<String> terrainComboBox = new ComboBox<>();
-        terrainComboBox.getItems().addAll("Flat Plains", "Rolling Hills", "Mountainous", "Mixed", "Coastal", "Desert");
-        terrainComboBox.setValue("Mixed");
+        
+        Map<String, Geo.TerrainConfig.TerrainType> terrainMap = new java.util.LinkedHashMap<>();
+        terrainMap.put("No Map", null);
+        for (Geo.TerrainConfig.TerrainType type : Geo.TerrainConfig.TerrainType.values()) {
+            terrainMap.put(type.getDisplayName(), type);
+        }
+        
+        terrainComboBox.getItems().add("No Map");
+        for (Geo.TerrainConfig.TerrainType type : Geo.TerrainConfig.TerrainType.values()) {
+            String displayName = type.getDisplayName();
+            terrainComboBox.getItems().add(displayName);
+        }
+        
+        terrainComboBox.setCellFactory(lv -> {
+            ListCell<String> cell = new ListCell<String>() {
+                @Override
+                protected void updateItem(String item, boolean empty) {
+                    super.updateItem(item, empty);
+                    if (empty || item == null) {
+                        setText(null);
+                        setDisable(true);
+                    } else {
+                        setText(item);
+                        if (item.equals("No Map")) {
+                            setDisable(false);
+                        } else {
+                            Geo.TerrainConfig.TerrainType type = Geo.TerrainConfig.TerrainType.fromDisplayName(item);
+                            boolean hasFile = Geo.TerrainConfig.hasGeoJsonFile(type);
+                            setDisable(!hasFile);
+                        }
+                    }
+                }
+            };
+            return cell;
+        });
+        
+        terrainComboBox.setValue("No Map");
         terrainLabel.setPrefWidth(120);
         terrainSetting.getChildren().addAll(terrainLabel, terrainComboBox);
 
@@ -396,10 +434,36 @@ public class MainGui extends Application {
                 ", Planet: " + planet + ", Region: " + region + ", Coords: " + String.format("%.0f", latitude) + "°/" + String.format("%.0f", longitude) + "°" +
                 ", Map Size: " + mapSize + ", Terrain: " + terrain + ", Difficulty: " + difficulty);
 
+            // 加载地形数据（按需转换为 HDF5）
+            Geo.TerrainConfig.TerrainType terrainType = Geo.TerrainConfig.TerrainType.fromDisplayName(terrain);
+            Geo.GeoJsonImportor geoJsonImportor = new Geo.GeoJsonImportor();
+            
+            if (terrainType != null) {
+                try {
+                    geoJsonImportor.ensureTerrainDataAvailable(terrainType);
+                    
+                    if (geoJsonImportor.needsHdf5Conversion(terrainType)) {
+                        CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Terrain " + terrain + " will be converted to HDF5");
+                    } else {
+                        CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Terrain " + terrain + " using HDF5 cache");
+                    }
+                    
+                    // 加载地图数据
+                    java.util.List<Geo.GeoJsonImportor.FeatureData> terrainFeatures = geoJsonImportor.loadMapByTerrain(terrainType);
+                    CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Loaded " + terrainFeatures.size() + " features for terrain: " + terrain);
+                    
+                } catch (Exception ex) {
+                    CreateLogFile.getInstance().log(CreateLogFile.LogLevel.ERROR, "[MainGui]:Failed to load terrain data: " + ex.getMessage());
+                }
+            } else {
+                CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:No map selected, skipping terrain loading");
+            }
+            
             // 调用存档创建功能
             CreateLogFile.getInstance().log(CreateLogFile.LogLevel.INFO, "[MainGui]:Starting save creation for simulation: " + simulationName);
             Simulation.SimulationSaver saver = new Simulation.SimulationSaver();
             saver.setBasicMapInfo(simulationName, "Player", region);
+            saver.setTerrainType(terrain);
             boolean saveSuccess = saver.saveToFile(simulationName);
 
             if (saveSuccess) {

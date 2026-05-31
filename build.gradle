@@ -65,6 +65,9 @@ subprojects {
 
   repositories {
     mavenCentral()
+    maven {
+      url = "https://repo.osgeo.org/repository/release/"
+    }
   }
 
   javafx {
@@ -74,5 +77,16 @@ subprojects {
 
   dependencies {
     implementation 'org.json:json:20250107'
+    def geotoolsVersion = "33.3"
+    // GeoTools 核心模块（排除 JAI 传递依赖）
+    implementation("org.geotools:gt-main:$geotoolsVersion") {
+        exclude group: 'javax.media', module: 'jai_core'
+        exclude group: 'javax.media', module: 'jai_codec'
+    }
+    // 处理 GeoJSON 数据
+    implementation("org.geotools:gt-geojson:$geotoolsVersion") {
+        exclude group: 'javax.media', module: 'jai_core'
+        exclude group: 'javax.media', module: 'jai_codec'
+    }
   }
 }
